@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System | All-In-One Standalone Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-sans); background-color: var(--bg-main); color: var(--text-main); line-height: 1.5; }
+        .app-container { display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .navbar {
+            background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
+        }
+        .brand { display: flex; align-items: center; gap: 0.85rem; }
+        .brand-icon { font-size: 2rem; background: var(--primary-light); width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .brand-text h1 { font-size: 1.25rem; font-weight: 700; }
+        .subtitle { font-size: 0.825rem; color: var(--text-muted); }
+        .nav-actions { display: flex; align-items: center; gap: 1rem; }
+        
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem;
+            border-radius: 9999px; font-size: 0.8rem; font-weight: 600; background: #ecfdf5; color: #047857;
+        }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,0.3); }
+
+        .main-content { flex: 1; max-width: 1320px; width: 100%; margin: 0 auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm);
+        }
+        .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .bg-blue { background: #eff6ff; }
+        .bg-green { background: #f0fdf4; }
+        .bg-purple { background: #faf5ff; }
+        .bg-amber { background: #fffbeb; }
+        .stat-title { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
+        .stat-number { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+
+        .controls-card {
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            padding: 1.25rem; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);
+        }
+        .search-box { position: relative; flex: 1 1 300px; display: flex; align-items: center; }
+        .search-box input {
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.4rem; border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); font-size: 0.9rem; background: #f8fafc;
+        }
+        .search-icon { position: absolute; left: 0.85rem; color: var(--text-muted); pointer-events: none; }
+        .filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+        .filter-group select { padding: 0.6rem 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #fff; font-size: 0.85rem; }
+
+        .records-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .records-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        .data-table th { background: #f8fafc; color: var(--text-muted); font-weight: 600; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); }
+        .data-table td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .data-table tr:hover { background: #f8fafc; }
+
+        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-active { background: #dcfce7; color: #15803d; }
+        .badge-inactive { background: #f1f5f9; color: #475569; }
+        .badge-graduated { background: #e0e7ff; color: #4338ca; }
+        .badge-suspended { background: #fee2e2; color: #b91c1c; }
+        .dept-tag { background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem; }
+        .gpa-tag { font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 4px; background: #f8fafc; border: 1px solid var(--border-color); }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: var(--transition); }
+        .btn-sm { padding: 0.45rem 0.85rem; font-size: 0.8rem; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-action { background: none; border: 1px solid var(--border-color); padding: 0.35rem 0.6rem; border-radius: 6px; cursor: pointer; }
+        .btn-action:hover { background: #f1f5f9; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; }
+        .modal-dialog { background: #fff; border-radius: var(--radius-lg); width: 100%; max-width: 600px; box-shadow: var(--shadow-lg); max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 1.5rem; overflow-y: auto; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
+        .form-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+        .col-6 { flex: 1 1 calc(50% - 0.5rem); }
+        .col-4 { flex: 1 1 calc(33.333% - 0.67rem); }
+        .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+        .form-group label { font-size: 0.8rem; font-weight: 600; }
+        .form-group input, .form-group select { padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; }
+        .field-error { font-size: 0.75rem; color: var(--danger); min-height: 1rem; }
+
+        .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; z-index: 999; }
+        .toast { background: #fff; border-radius: var(--radius-md); padding: 0.85rem 1.25rem; box-shadow: var(--shadow-lg); font-size: 0.875rem; border-left: 4px solid var(--primary); }
+        .toast-success { border-left-color: var(--success); }
+        .toast-error { border-left-color: var(--danger); }
+        .footer { background: #fff; border-top: 1px solid var(--border-color); padding: 1.25rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">🎓</div>
+                <div class="brand-text">
+                    <h1>EduTrack Pro</h1>
+                    <p class="subtitle">Complete CRUD Student Management System</p>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div class="status-badge"><span class="pulse-dot"></span> Full-Stack CRUD Ready</div>
+                <button id="addStudentBtn" class="btn btn-primary">+ Add New Student</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue">👥</div>
+                    <div><div class="stat-title">Total Students</div><h3 id="statTotal" class="stat-number">0</h3></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green">🟢</div>
+                    <div><div class="stat-title">Active Students</div><h3 id="statActive" class="stat-number">0</h3></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple">⭐</div>
+                    <div><div class="stat-title">Average GPA</div><h3 id="statGPA" class="stat-number">0.00</h3></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-amber">🏛️</div>
+                    <div><div class="stat-title">Departments</div><h3 id="statDepts" class="stat-number">5</h3></div>
+                </div>
+            </section>
+
+            <section class="controls-card">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search student name, ID, or email...">
+                </div>
+                <div class="filter-group">
+                    <select id="departmentFilter">
+                        <option value="">All Departments</option>
+                        <option value="CSE">Computer Science (CSE)</option>
+                        <option value="IT">Information Technology (IT)</option>
+                        <option value="ECE">Electronics (ECE)</option>
+                        <option value="MECH">Mechanical (MECH)</option>
+                        <option value="MBA">Business Admin (MBA)</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Graduated">Graduated</option>
+                        <option value="Suspended">Suspended</option>
+                    </select>
+                    <button id="resetFiltersBtn" class="btn btn-secondary btn-sm">↺ Reset</button>
+                </div>
+            </section>
+
+            <section class="records-container">
+                <div class="records-header">
+                    <h2>Student Records (<span id="recordsCount">0</span>)</h2>
+                    <button id="seedDataBtn" class="btn btn-secondary btn-sm">Reset Sample Data</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Full Name</th>
+                                <th>Department</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Admission</th>
+                                <th>GPA</th>
+                                <th>Status</th>
+                                <th style="text-align:right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p><strong>EduTrack Pro</strong> • Standard Operating Procedure (SOP) CRUD Web Application • GitHub: <a href="https://github.com/akashsasikumar2572008-source/student-management-system" target="_blank">akashsasikumar2572008-source/student-management-system</a></p>
+        </footer>
+    </div>
+
+    <!-- Student Form Modal -->
+    <div id="studentModal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Student</h3>
+                <button type="button" style="background:none;border:none;font-size:1.5rem;cursor:pointer" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="studentForm">
+                <input type="hidden" id="studentPk">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Student ID / Roll No *</label>
+                            <input type="text" id="fieldId" placeholder="e.g. STU2026001" required>
+                            <span class="field-error" id="err-id"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Department *</label>
+                            <select id="fieldDept" required>
+                                <option value="">Select Department</option>
+                                <option value="CSE">Computer Science (CSE)</option>
+                                <option value="IT">Information Technology (IT)</option>
+                                <option value="ECE">Electronics (ECE)</option>
+                                <option value="MECH">Mechanical (MECH)</option>
+                                <option value="MBA">Business Admin (MBA)</option>
+                            </select>
+                            <span class="field-error" id="err-dept"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>First Name *</label>
+                            <input type="text" id="fieldFirst" placeholder="First name" required>
+                            <span class="field-error" id="err-first"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Last Name *</label>
+                            <input type="text" id="fieldLast" placeholder="Last name" required>
+                            <span class="field-error" id="err-last"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label>Official Email *</label>
+                            <input type="email" id="fieldEmail" placeholder="student@university.edu" required>
+                            <span class="field-error" id="err-email"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label>Phone Number</label>
+                            <input type="tel" id="fieldPhone" placeholder="+919876543210">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label>Enrollment Date *</label>
+                            <input type="date" id="fieldDate" required>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>GPA (0.00 - 4.00) *</label>
+                            <input type="number" step="0.01" min="0" max="4" id="fieldGPA" placeholder="3.85" required>
+                            <span class="field-error" id="err-gpa"></span>
+                        </div>
+                        <div class="form-group col-4">
+                            <label>Status *</label>
+                            <select id="fieldStatus" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Graduated">Graduated</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button type="button" style="background:none;border:none;font-size:1.5rem;cursor:pointer" id="closeDeleteBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteTargetName">this student</strong>?</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">This action removes the record permanently.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // Default Seed Data
+        const INITIAL_STUDENTS = [
+            { id: 1, student_id: "STU2024001", first_name: "Aarav", last_name: "Sharma", department: "CSE", email: "aarav.sharma@university.edu", phone: "+919876543210", enrollment_date: "2023-08-01", gpa: 3.92, status: "Active" },
+            { id: 2, student_id: "STU2024002", first_name: "Priya", last_name: "Patel", department: "IT", email: "priya.patel@university.edu", phone: "+919876543211", enrollment_date: "2023-08-01", gpa: 3.84, status: "Active" },
+            { id: 3, student_id: "STU2024003", first_name: "Rohan", last_name: "Verma", department: "ECE", email: "rohan.verma@university.edu", phone: "+919876543212", enrollment_date: "2022-08-01", gpa: 3.45, status: "Active" },
+            { id: 4, student_id: "STU2024004", first_name: "Ananya", last_name: "Iyer", department: "CSE", email: "ananya.iyer@university.edu", phone: "+919876543213", enrollment_date: "2021-08-01", gpa: 3.98, status: "Graduated" },
+            { id: 5, student_id: "STU2024005", first_name: "Marcus", last_name: "Vance", department: "MECH", email: "marcus.v@university.edu", phone: "+14155552671", enrollment_date: "2023-08-01", gpa: 3.15, status: "Active" }
+        ];
+
+        // Local Storage State Store
+        function getStore() {
+            const data = localStorage.getItem("edutrack_students");
+            if (!data) {
+                localStorage.setItem("edutrack_students", JSON.stringify(INITIAL_STUDENTS));
+                return INITIAL_STUDENTS;
+            }
+            return JSON.parse(data);
+        }
+        function saveStore(data) { localStorage.setItem("edutrack_students", JSON.stringify(data)); }
+
+        let activeId = null;
+        let deleteId = null;
+
+        function render() {
+            let students = getStore();
+            const search = document.getElementById("searchInput").value.toLowerCase().trim();
+            const dept = document.getElementById("departmentFilter").value;
+            const status = document.getElementById("statusFilter").value;
+
+            if (search) {
+                students = students.filter(s => 
+                    s.student_id.toLowerCase().includes(search) || 
+                    (s.first_name + " " + s.last_name).toLowerCase().includes(search) ||
+                    s.email.toLowerCase().includes(search)
+                );
+            }
+            if (dept) students = students.filter(s => s.department === dept);
+            if (status) students = students.filter(s => s.status === status);
+
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            document.getElementById("recordsCount").textContent = students.length;
+
+            const all = getStore();
+            document.getElementById("statTotal").textContent = all.length;
+            document.getElementById("statActive").textContent = all.filter(s => s.status === "Active").length;
+            const avg = all.length ? (all.reduce((a, b) => a + parseFloat(b.gpa), 0) / all.length).toFixed(2) : "0.00";
+            document.getElementById("statGPA").textContent = avg;
+
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#64748b">No student records found.</td></tr>`;
+                return;
+            }
+
+            students.forEach(s => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${s.student_id}</strong></td>
+                    <td><strong>${s.first_name} ${s.last_name}</strong></td>
+                    <td><span class="dept-tag">${s.department}</span></td>
+                    <td><a href="mailto:${s.email}">${s.email}</a></td>
+                    <td>${s.phone || '—'}</td>
+                    <td>${s.enrollment_date}</td>
+                    <td><span class="gpa-tag">${parseFloat(s.gpa).toFixed(2)}</span></td>
+                    <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
+                    <td style="text-align:right">
+                        <button class="btn-action" onclick="openEdit(${s.id})">✏️ Edit</button>
+                        <button class="btn-action" onclick="promptDelete(${s.id}, '${s.first_name} ${s.last_name}')">🗑️ Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openCreate() {
+            activeId = null;
+            document.getElementById("modalTitle").textContent = "Add New Student";
+            document.getElementById("studentForm").reset();
+            document.getElementById("fieldId").readOnly = false;
+            document.getElementById("fieldDate").value = new Date().toISOString().split('T')[0];
+            clearErrors();
+            document.getElementById("studentModal").style.display = "flex";
+        }
+
+        window.openEdit = function(id) {
+            activeId = id;
+            const s = getStore().find(x => x.id === id);
+            if (!s) return;
+            document.getElementById("modalTitle").textContent = "Edit Student Details";
+            document.getElementById("fieldId").value = s.student_id;
+            document.getElementById("fieldId").readOnly = true;
+            document.getElementById("fieldFirst").value = s.first_name;
+            document.getElementById("fieldLast").value = s.last_name;
+            document.getElementById("fieldDept").value = s.department;
+            document.getElementById("fieldEmail").value = s.email;
+            document.getElementById("fieldPhone").value = s.phone || "";
+            document.getElementById("fieldDate").value = s.enrollment_date;
+            document.getElementById("fieldGPA").value = s.gpa;
+            document.getElementById("fieldStatus").value = s.status;
+            clearErrors();
+            document.getElementById("studentModal").style.display = "flex";
+        };
+
+        window.promptDelete = function(id, name) {
+            deleteId = id;
+            document.getElementById("deleteTargetName").textContent = name;
+            document.getElementById("deleteModal").style.display = "flex";
+        };
+
+        document.getElementById("confirmDeleteBtn").onclick = function() {
+            if (!deleteId) return;
+            let data = getStore().filter(x => x.id !== deleteId);
+            saveStore(data);
+            document.getElementById("deleteModal").style.display = "none";
+            toast("Student deleted successfully");
+            render();
+        };
+
+        document.getElementById("studentForm").onsubmit = function(e) {
+            e.preventDefault();
+            clearErrors();
+            let valid = true;
+            const sid = document.getElementById("fieldId").value.trim().toUpperCase();
+            const first = document.getElementById("fieldFirst").value.trim();
+            const last = document.getElementById("fieldLast").value.trim();
+            const email = document.getElementById("fieldEmail").value.trim().toLowerCase();
+            const dept = document.getElementById("fieldDept").value;
+            const gpa = parseFloat(document.getElementById("fieldGPA").value);
+
+            const store = getStore();
+            if (!activeId && store.some(x => x.student_id === sid)) {
+                document.getElementById("err-id").textContent = "Student ID already exists."; valid = false;
+            }
+            if (store.some(x => x.email === email && x.id !== activeId)) {
+                document.getElementById("err-email").textContent = "Email is already registered."; valid = false;
+            }
+            if (isNaN(gpa) || gpa < 0 || gpa > 4) {
+                document.getElementById("err-gpa").textContent = "GPA must be between 0.00 and 4.00"; valid = false;
+            }
+            if (!valid) return;
+
+            const record = {
+                id: activeId || Date.now(),
+                student_id: sid,
+                first_name: first,
+                last_name: last,
+                department: dept,
+                email: email,
+                phone: document.getElementById("fieldPhone").value.trim(),
+                enrollment_date: document.getElementById("fieldDate").value,
+                gpa: gpa,
+                status: document.getElementById("fieldStatus").value
+            };
+
+            if (activeId) {
+                const idx = store.findIndex(x => x.id === activeId);
+                store[idx] = record;
+                toast("Student updated successfully!");
+            } else {
+                store.unshift(record);
+                toast("Student created successfully!");
+            }
+
+            saveStore(store);
+            document.getElementById("studentModal").style.display = "none";
+            render();
+        };
+
+        function clearErrors() { document.querySelectorAll(".field-error").forEach(e => e.textContent = ""); }
+
+        function toast(msg, type = "success") {
+            const el = document.createElement("div");
+            el.className = "toast toast-" + type;
+            el.textContent = (type === "success" ? "✅ " : "❌ ") + msg;
+            document.getElementById("toastContainer").appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        document.getElementById("addStudentBtn").onclick = openCreate;
+        document.getElementById("closeModalBtn").onclick = () => document.getElementById("studentModal").style.display = "none";
+        document.getElementById("cancelModalBtn").onclick = () => document.getElementById("studentModal").style.display = "none";
+        document.getElementById("closeDeleteBtn").onclick = () => document.getElementById("deleteModal").style.display = "none";
+        document.getElementById("cancelDeleteBtn").onclick = () => document.getElementById("deleteModal").style.display = "none";
+        document.getElementById("searchInput").oninput = render;
+        document.getElementById("departmentFilter").onchange = render;
+        document.getElementById("statusFilter").onchange = render;
+        document.getElementById("resetFiltersBtn").onclick = () => {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("departmentFilter").value = "";
+            document.getElementById("statusFilter").value = "";
+            render();
+        };
+        document.getElementById("seedDataBtn").onclick = () => {
+            saveStore(INITIAL_STUDENTS);
+            toast("Reset to initial sample dataset!");
+            render();
+        };
+
+        render();
+    </script>
+</body>
+</html>
