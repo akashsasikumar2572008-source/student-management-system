@@ -1,0 +1,327 @@
+{
+	"info": {
+		"_postman_id": "9b12cf34-a123-4567-b89a-789012abcdef",
+		"name": "Student Management System - SOP API Collection",
+		"description": "Comprehensive Postman test collection for Student Management System full-stack CRUD API, complying with SOP Sections 4, 7.6, 8, 9, and 10.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Departments - List All",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/departments/",
+					"host": ["{{base_url}}"],
+					"path": ["departments", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Students - Read All (List)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response is an array of students\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(Array.isArray(jsonData) || Array.isArray(jsonData.results)).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/",
+					"host": ["{{base_url}}"],
+					"path": ["students", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Students - Filter by Status & Search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/?search=Sharma&status=Active",
+					"host": ["{{base_url}}"],
+					"path": ["students", ""],
+					"query": [
+						{
+							"key": "search",
+							"value": "Sharma"
+						},
+						{
+							"key": "status",
+							"value": "Active"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Students - Create Student (Valid Data)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 Created\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Student object returned with ID\", function () {",
+							"    var res = pm.response.json();",
+							"    pm.expect(res.status).to.eql(\"success\");",
+							"    pm.expect(res.data).to.have.property(\"id\");",
+							"    pm.collectionVariables.set(\"created_student_id\", res.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"student_id\": \"STU2026999\",\n    \"first_name\": \"Postman\",\n    \"last_name\": \"Tester\",\n    \"email\": \"postman.tester@university.edu\",\n    \"phone\": \"+12345678901\",\n    \"department\": 1,\n    \"enrollment_date\": \"2026-09-01\",\n    \"gpa\": 3.88,\n    \"status\": \"Active\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/students/",
+					"host": ["{{base_url}}"],
+					"path": ["students", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Students - Create Duplicate Student ID (Validation Failure)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Errors dictionary contains student_id message\", function () {",
+							"    var res = pm.response.json();",
+							"    pm.expect(res.errors).to.have.property(\"student_id\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"student_id\": \"STU2026999\",\n    \"first_name\": \"Duplicate\",\n    \"last_name\": \"Attempt\",\n    \"email\": \"duplicate.attempt@university.edu\",\n    \"department\": 1,\n    \"enrollment_date\": \"2026-09-01\",\n    \"gpa\": 3.50,\n    \"status\": \"Active\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/students/",
+					"host": ["{{base_url}}"],
+					"path": ["students", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Students - Read One (Detail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/{{created_student_id}}/",
+					"host": ["{{base_url}}"],
+					"path": ["students", "{{created_student_id}}", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Students - Update Student (PUT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"GPA updated correctly\", function () {",
+							"    var res = pm.response.json();",
+							"    pm.expect(res.data.gpa).to.eql(\"3.95\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"student_id\": \"STU2026999\",\n    \"first_name\": \"Postman\",\n    \"last_name\": \"Tester Updated\",\n    \"email\": \"postman.tester@university.edu\",\n    \"phone\": \"+12345678901\",\n    \"department\": 1,\n    \"enrollment_date\": \"2026-09-01\",\n    \"gpa\": 3.95,\n    \"status\": \"Graduated\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/students/{{created_student_id}}/",
+					"host": ["{{base_url}}"],
+					"path": ["students", "{{created_student_id}}", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. Students - Delete Student (DELETE)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK or 204 No Content\", function () {",
+							"    pm.expect([200, 204]).to.include(pm.response.code);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/{{created_student_id}}/",
+					"host": ["{{base_url}}"],
+					"path": ["students", "{{created_student_id}}", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. Students - Delete Non-Existent ID (404 Not Found)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 Not Found\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/99999/",
+					"host": ["{{base_url}}"],
+					"path": ["students", "99999", ""]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. Dashboard Stats",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Contains total and active metrics\", function () {",
+							"    var res = pm.response.json();",
+							"    pm.expect(res).to.have.property(\"total_students\");",
+							"    pm.expect(res).to.have.property(\"active_students\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/students/stats/",
+					"host": ["{{base_url}}"],
+					"path": ["students", "stats", ""]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000/api"
+		},
+		{
+			"key": "created_student_id",
+			"value": "1"
+		}
+	]
+}

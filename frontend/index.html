@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System | SOP CRUD Web Application</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">🎓</div>
+                <div class="brand-text">
+                    <h1>EduTrack Pro</h1>
+                    <p class="subtitle">Student Information & Management System</p>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <div id="connectionStatus" class="status-indicator status-online" title="Backend API Status">
+                    <span class="pulse-dot"></span>
+                    <span class="status-label">API Connected</span>
+                </div>
+                <button id="addStudentBtn" class="btn btn-primary">
+                    <span class="btn-icon">+</span> Add New Student
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Overview Stats (SOP Section 7.4) -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon bg-blue-light">👥</div>
+                    <div class="stat-details">
+                        <span class="stat-title">Total Enrolled</span>
+                        <h3 id="statTotalStudents" class="stat-number">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-green-light">🟢</div>
+                    <div class="stat-details">
+                        <span class="stat-title">Active Students</span>
+                        <h3 id="statActiveStudents" class="stat-number">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-purple-light">⭐</div>
+                    <div class="stat-details">
+                        <span class="stat-title">Average GPA</span>
+                        <h3 id="statAvgGPA" class="stat-number">0.00</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon bg-amber-light">🏛️</div>
+                    <div class="stat-details">
+                        <span class="stat-title">Departments</span>
+                        <h3 id="statTotalDepts" class="stat-number">0</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controls: Search, Filter, and View Controls (SOP Section 7.1 & 7.4) -->
+            <section class="controls-card">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by name, student ID, or email..." autocomplete="off">
+                    <button id="clearSearchBtn" class="btn-clear" style="display: none;">✕</button>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <label for="departmentFilter">Department</label>
+                        <select id="departmentFilter">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="statusFilter">Status</label>
+                        <select id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Graduated">Graduated</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <button id="resetFiltersBtn" class="btn btn-secondary btn-sm" title="Reset Filters">
+                        ↺ Reset
+                    </button>
+                </div>
+            </section>
+
+            <!-- Table and Records Display Area (SOP Section 7.4 & 8) -->
+            <section class="records-container">
+                <div class="records-header">
+                    <h2>Student Records (<span id="recordsCount">0</span>)</h2>
+                    <div class="records-actions">
+                        <button id="refreshBtn" class="btn btn-icon-only" title="Refresh records from server">🔄</button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="table-responsive">
+                    <table class="data-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Full Name</th>
+                                <th>Department</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Enrollment</th>
+                                <th>GPA</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+
+                    <!-- Loading State -->
+                    <div id="loadingIndicator" class="empty-state">
+                        <div class="spinner"></div>
+                        <p>Loading student records...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📂</div>
+                        <h3>No student records found</h3>
+                        <p id="emptyStateMessage">No records match your criteria. Add a new student to get started.</p>
+                        <button class="btn btn-primary mt-3" onclick="document.getElementById('addStudentBtn').click()">+ Add Student</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>EduTrack Pro</strong> • Standard Operating Procedure (SOP) CRUD Web Application • Built with Django REST Framework & Modern Frontend</p>
+        </footer>
+    </div>
+
+    <!-- Create / Edit Student Modal Dialog (SOP Section 7.4, 8 & 9) -->
+    <div id="studentModal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Student</h3>
+                <button type="button" class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="studentForm" novalidate>
+                <input type="hidden" id="formStudentIdPK">
+                <div class="modal-body">
+                    <div id="formErrorAlert" class="alert alert-danger" style="display: none;"></div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="fieldStudentId" class="required">Student ID / Roll No.</label>
+                            <input type="text" id="fieldStudentId" name="student_id" placeholder="e.g. STU2026001" required>
+                            <span class="field-error" id="err-student_id"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="fieldDepartment" class="required">Department</label>
+                            <select id="fieldDepartment" name="department" required>
+                                <option value="">Select Department</option>
+                            </select>
+                            <span class="field-error" id="err-department"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="fieldFirstName" class="required">First Name</label>
+                            <input type="text" id="fieldFirstName" name="first_name" placeholder="Alice" required>
+                            <span class="field-error" id="err-first_name"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="fieldLastName" class="required">Last Name</label>
+                            <input type="text" id="fieldLastName" name="last_name" placeholder="Johnson" required>
+                            <span class="field-error" id="err-last_name"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="fieldEmail" class="required">Official Email</label>
+                            <input type="email" id="fieldEmail" name="email" placeholder="alice@university.edu" required>
+                            <span class="field-error" id="err-email"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="fieldPhone">Contact Phone</label>
+                            <input type="tel" id="fieldPhone" name="phone" placeholder="+1234567890">
+                            <span class="field-error" id="err-phone"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-4">
+                            <label for="fieldEnrollmentDate" class="required">Enrollment Date</label>
+                            <input type="date" id="fieldEnrollmentDate" name="enrollment_date" required>
+                            <span class="field-error" id="err-enrollment_date"></span>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="fieldGPA" class="required">GPA (0.00 - 4.00)</label>
+                            <input type="number" id="fieldGPA" name="gpa" step="0.01" min="0.00" max="4.00" placeholder="3.75" required>
+                            <span class="field-error" id="err-gpa"></span>
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="fieldStatus" class="required">Status</label>
+                            <select id="fieldStatus" name="status" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Graduated">Graduated</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                            <span class="field-error" id="err-status"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveStudentBtn">
+                        <span id="saveBtnSpinner" class="btn-spinner" style="display: none;"></span>
+                        <span id="saveBtnText">Save Student</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal (SOP Section 8: Delete Confirmation) -->
+    <div id="deleteModal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog modal-dialog-sm">
+            <div class="modal-header">
+                <h3>Confirm Deletion</h3>
+                <button type="button" class="btn-close" id="closeDeleteModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-prompt-icon">⚠️</div>
+                <p>Are you sure you want to delete <strong id="deleteStudentName">this student</strong>?</p>
+                <p class="text-muted text-sm mt-1">This action cannot be undone. The record will be permanently removed from the database.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container (SOP Section 7.7) -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
